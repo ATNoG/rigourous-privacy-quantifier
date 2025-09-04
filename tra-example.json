@@ -1,0 +1,26 @@
+{
+    "type": "risk_score",
+    "spec_version": "2.1",
+    "id": "bundle--cd2a2cf9-18f3-480a-aaa5-c4b59ce6910b",
+    "created": "2025-06-13 07:22:26.520353553",
+    "modified": "2025-06-13 07:22:26.520357255",
+    "risk-score": {
+        "anomalies--1": [
+            {
+                "cve_id": "CVE-2022-41763",
+                "cpe": "cpe:2.3:a:nokia:access_management_system:9.7.05:*:*:*:*:*:*:*",
+                "description": "An issue was discovered in NOKIA AMS 9.7.05. Remote Code Execution exists via the debugger of the ipAddress variable. A remote user, authenticated to the AMS server, could inject code in the PING function. The privileges of the command executed depend on the user that runs the service.",
+                "cvss31_vector_string": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+                "base_score": 8.8,
+                "base_severity": "HIGH",
+                "attack_vector": "NETWORK",
+                "attack_complexity": "LOW",
+                "privileges_required": "LOW",
+                "user_interaction": "NONE",
+                "confidentiality_impact": "HIGH",
+                "integrity_impact": "HIGH",
+                "availability_impact": "HIGH"
+            }
+        ]
+    }
+}
