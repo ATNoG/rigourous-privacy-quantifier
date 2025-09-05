@@ -10,7 +10,7 @@ pip3 install -r requirements.txt
 
 ## Running
 
-*Requires access to **IT LLM (skynet.av.it.pt)**, e.g., through VPN or in premises.*
+*Requires access to **IT LLM**, e.g., through VPN or in premises.*
 
 ### ONE Testbed access
 
@@ -19,5 +19,5 @@ Connect with **OpenVPN** and use **kubeconfig** file to manage resources in **it
 ### Running the script
 
 ```sh
-python3 main.py <RISK_SPECIFICATION_API>
+python3 main.py
 ```

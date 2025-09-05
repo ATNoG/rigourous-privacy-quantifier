@@ -10,6 +10,9 @@ class Config(BaseModel):
     sasl_mechanism: str
     sasl_plain_username: str
     sasl_plain_password: str
+    risk_specification_api_endpoint: str
+    auto_offset_reset: str
+    skynet_token: str
 
     @classmethod
     def from_config_path(cls, str_path: str) -> "Config | None":
@@ -22,9 +25,12 @@ class Config(BaseModel):
             if not final["ca_cert"].exists():
                 return None
 
-            # get the kafka configs
+            # get random configs
             with (path / "config.json").open() as f:
-                final.update(json.load(f)["kafka"])
+                json_data = json.load(f)
+                final.update(json_data["kafka"])
+                final.update(json_data["risk_specification_api_endpoint"])
+                final.update(json_data["skynet"])
 
             return cls(**final)
         except:
