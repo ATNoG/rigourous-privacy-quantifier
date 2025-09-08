@@ -455,6 +455,7 @@ if __name__ == "__main__":
         print("Could not build config from config directory.")
         exit(1)
 
+    # TODO: generate all the possible cvss conbinations and test them all
     # cvss = "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
 
     cvss, score = "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N", 2.5  # 2.5  --> https://nvd.nist.gov/vuln/detail/CVE-2024-35281

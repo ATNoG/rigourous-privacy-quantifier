@@ -39,28 +39,20 @@ def _init_kafka(config: Config) -> KafkaConsumer:
     print(f"Kafka consumer topics: {consumer.topics()}")
     return consumer
 
-def _receive_kafka_messages(config: Config, consumer: KafkaConsumer):
+def _process_kafka_messages(config: Config, consumer: KafkaConsumer):
     try:
         logging.info(f'Subscribed to topic: {config.kafka_topic}')
         print(f'Subscribed to topic: {config.kafka_topic}', flush=True)
 
         # process every kafka message
-        counter = 0
         for message in consumer:
             logging.info(f"Received message: {message.value.decode('utf-8')}")
-            print(f"Received message: {message.value.decode('utf-8')}", flush=True)
+            print(f"Received message: {message.value.decode('utf-8')[:100] + ' ...'}", flush=True)
 
             successful_send = _send_risk_specification(config, message.value.decode('utf-8'))
             if successful_send:
                 logging.info("Successfully sent risk specification")
                 print(f"Successfully sent risk specification", flush=True)
-
-            # for tests only
-            counter += 1
-            if counter >= 999999999999999:
-                exit(0)
-
-            print()
 
     except KeyboardInterrupt:
         logging.error("Process interrupted by user")
@@ -80,17 +72,19 @@ def _send_risk_specification(config: Config, message: str) -> bool:
     if not risk_specification:
         return False
 
-    return RiskSpecificationApi(config.risk_specification_api_endpoint).send_risk_specification(risk_specification)
+    # return RiskSpecificationApi(config.risk_specification_api_endpoint).send_risk_specification(risk_specification)
+    return True
 
 def main(config: Config):
-    # kafka_topic = "R12-AID-TRA" # kafka_topic = "test_kafka"
-    kafka_topic = "R13-AID"
+    # kafka_topic = "test_kafka"
+    # kafka_topic = "R12-AID-TRA"
+    # kafka_topic = "R13-AID"
     # kafka_topic = "MTD-AID"
-    # kafka_topic = "testing123"
+    kafka_topic = "testing123"
 
     config.kafka_topic = kafka_topic
     consumer = _init_kafka(config)
-    _receive_kafka_messages(config, consumer)
+    _process_kafka_messages(config, consumer)
 
 if __name__ == "__main__":
     config = Config.from_config_path("config/")
@@ -98,5 +92,5 @@ if __name__ == "__main__":
         print("Could not build config from config directory.")
         exit(1)
 
-    get_topics(config)
+    # get_topics(config)
     main(config)

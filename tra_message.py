@@ -30,10 +30,13 @@ class TraMessage(BaseModel):
     @classmethod
     def from_str(cls, message: str) -> "TraMessage | None":
         try:
-            # the message is encoded twice so we need to decode twice as well
-            data = json.loads(json.loads(message)) 
-            print(f"Parsed message: {str(data)[:100] + ' ...'}", flush=True)
+            # sometimes the message is encoded twice so we need to decode twice as well
+            data = json.loads(message)
+            if type(data) == str:
+                data = json.loads(data)
+
+            # print(f"Parsed message: {str(data)[:100] + ' ...'}", flush=True)
             return TraMessage(**data)
         except Exception as e:
-            print(f"Failed to parse message: {e}", flush=True)
+            # print(f"Failed to parse message: {e}", flush=True)
             return None

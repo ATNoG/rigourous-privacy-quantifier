@@ -170,21 +170,27 @@ def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout
     privacy_score = round(sum(values) / len(values), 1)
     return privacy_score
 
-# TODO: what to do if the cvss is invalid??
-# TODO: what if the models just dont give valid answers and we enter an infinite loop??
-def compute_privacy_score(config: Config, cvss: str) -> float:
+def compute_privacy_score(config: Config, cvss: str) -> float | None:
     "Evaluate the `cvss` impact to privacy as a score from `0.0 to 10.0`."
 
     # configs
-    model = "gemma3:12b"
+    model = "phi3.5:latest"
     instance_count = 7
     timeout = 60
+    max_runs = 5
 
     cvss_readable = cvss_to_readable_text(cvss)
-    assert cvss_readable != None
+    if cvss_readable == None:
+        print("Failed to parse the cvss with an invalid format")
+        return None
 
+    count = 0
     privacy_score = do_query(config, cvss_readable, instance_count, model, timeout)
-    while privacy_score == None:
+    while privacy_score == None and count < max_runs:
         privacy_score = do_query(config, cvss_readable, instance_count, model, timeout)
+        count += 1
+
+    if count >= max_runs:
+        return None
 
     return privacy_score
