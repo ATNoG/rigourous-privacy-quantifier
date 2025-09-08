@@ -29,7 +29,7 @@ class Config(BaseModel):
             with (path / "config.json").open() as f:
                 json_data = json.load(f)
                 final.update(json_data["kafka"])
-                final.update(json_data["risk_specification_api_endpoint"])
+                final.update({"risk_specification_api_endpoint": json_data["risk_specification_api_endpoint"]})
                 final.update(json_data["skynet"])
 
             return cls(**final)
