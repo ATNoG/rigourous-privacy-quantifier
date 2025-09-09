@@ -76,13 +76,6 @@ def _send_risk_specification(config: Config, message: str) -> bool:
     return True
 
 def main(config: Config):
-    # kafka_topic = "test_kafka"
-    # kafka_topic = "R12-AID-TRA"
-    # kafka_topic = "R13-AID"
-    # kafka_topic = "MTD-AID"
-    kafka_topic = "testing123"
-
-    config.kafka_topic = kafka_topic
     consumer = _init_kafka(config)
     _process_kafka_messages(config, consumer)
 
@@ -91,6 +84,12 @@ if __name__ == "__main__":
     if not config:
         print("Could not build config from config directory.")
         exit(1)
+
+    # config.kafka_topic = "test_kafka"
+    # config.kafka_topic = "R12-AID-TRA"
+    # config.kafka_topic = "R13-AID"
+    # config.kafka_topic = "MTD-AID"
+    config.kafka_topic = "testing123"
 
     # get_topics(config)
     main(config)

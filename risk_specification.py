@@ -14,7 +14,6 @@ class RiskSpecification(BaseModel):
         if not tra_message.risk_score or not tra_message.risk_score.anomalies or not tra_message.risk_score.anomalies[0].cpe:
             return None
 
-        # print(tra_message.risk_score)
         scores = RiskSpecification._calculate_scores(config, tra_message.risk_score.anomalies)
         if scores == None:
             return None

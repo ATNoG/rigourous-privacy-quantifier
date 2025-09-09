@@ -20,6 +20,7 @@ class RiskScore(BaseModel):
     anomalies: list[Anomaly] = Field(alias="anomalies--1", default=[])
 
 class TraMessage(BaseModel):
+    # TODO: should all of these have the possibility of being None??
     type: str | None = None
     spec_version: str | None = None
     id: str | None = None
@@ -35,8 +36,8 @@ class TraMessage(BaseModel):
             if type(data) == str:
                 data = json.loads(data)
 
-            # print(f"Parsed message: {str(data)[:100] + ' ...'}", flush=True)
+            # print(f"Parsed TRA message: {str(data)[:100] + ' ...'}", flush=True)
             return TraMessage(**data)
         except Exception as e:
-            # print(f"Failed to parse message: {e}", flush=True)
+            # print(f"Failed to parse TRA message: {e}", flush=True)
             return None

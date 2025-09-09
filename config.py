@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 
 class Config(BaseModel):
+    # kafka
     ca_cert: Path
     kafka_address: str
     security_protocol: str
@@ -10,9 +11,17 @@ class Config(BaseModel):
     sasl_mechanism: str
     sasl_plain_username: str
     sasl_plain_password: str
-    risk_specification_api_endpoint: str
     auto_offset_reset: str
+
+    # skynet
     skynet_token: str
+    skynet_model: str
+    skynet_instance_count: int
+    skynet_timeout: int
+    skynet_max_runs: int
+
+    # random
+    risk_specification_api_endpoint: str
 
     @classmethod
     def from_config_path(cls, str_path: str) -> "Config | None":

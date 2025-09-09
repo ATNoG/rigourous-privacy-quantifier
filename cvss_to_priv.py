@@ -36,6 +36,10 @@ cvss3_1 = {
 
 # TODO: maybe this should support more than just cvss3.1
 def cvss_to_readable_text(cvss: str) -> str | None:
+    """Converts a CVSS v3.1 string into a human-readable text format.\n
+    Uses the `cvss3_1` dictionary to map CVSS components to their descriptive names and values, organizing them by scope.
+    """
+
     # check if the CVSS string starts with the expected version identifier
     if cvss.split('/')[0] != "CVSS:3.1":
         return None
@@ -79,12 +83,13 @@ def send_prompt_to_instance(url: str, headers: dict, data: dict, timeout: int) -
     except requests.RequestException as e:
         return {"error": True, "error-str": str(e)}
 
-def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count: int, model: str, timeout: int) -> list[dict[str, Any]]:
-    """Get a dictionaty with `instance_count` LLM responses.\n
-    Each answer will be acquired from :func:`send_prompt_to_instance`.\n
+def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[str, Any]]:
+    """Get `config.skynet_instance_count` LLM responses.\n
+    Each answer will be acquired from :func:`send_prompt_to_instance`.
     """
 
-    assert instance_count > 0
+    # TODO: is this really needed??
+    assert config.skynet_instance_count > 0
 
     url = "https://skynet.av.it.pt/api/chat/completions"
     prompt  = "Based on the following CVSS report about a component:\n"
@@ -92,8 +97,6 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count:
     prompt += "\nPlease evaluate the component based on the risk to privacy, from 1.0-10.0 (both inclusive), with one decimal place, following these immutable rules:\n"
     prompt += "- Lower score is less risk.\n"
     prompt += "- Give me ONLY the score without any other text."
-    # prompt += "- Think of the score range as being uniform so, DO NOT favour certain values in detriment of others."
-    # prompt += "- BE AS PREDICTABLE AND METHODIC AS POSSIBLE."
 
     headers = {
         'Authorization': f'Bearer {config.skynet_token}',
@@ -101,7 +104,7 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count:
     }
 
     data = {
-        "model": model,
+        "model": config.skynet_model,
         "messages": [{
             "role": "user",
             "content": prompt
@@ -111,16 +114,16 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count:
     }
 
     results = []
-    with ThreadPoolExecutor(max_workers=instance_count) as executor:
-        futures = [executor.submit(send_prompt_to_instance, url, headers, data, timeout) for _ in range(instance_count)]
+    with ThreadPoolExecutor(max_workers=config.skynet_instance_count) as executor:
+        futures = [executor.submit(send_prompt_to_instance, url, headers, data, config.skynet_timeout) for _ in range(config.skynet_instance_count)]
         for future in as_completed(futures):
             results.append(future.result())
 
     return results
 
 def get_result(res: str) -> float | None:
-    """Extract the float result from the LLM answer.\n
-    If the float cannot be extracted, `None` will be returned.
+    """Extract a float value from the given string `res`.\n
+    If a valid float cannot be extracted, `None` will be returned.
     """
 
     pat = re.compile(r"\d(?:\.\d)?")
@@ -135,8 +138,12 @@ def get_result(res: str) -> float | None:
         return None
 
 # TODO: maybe ignore runs with the std dev too high??
-def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout: int) -> float | None:
-    responses = send_prompt_to_multiple_instances(config, cvss, instance_count, model, timeout)
+def do_query(config: Config, cvss: str) -> float | None:
+    """
+    Queries multiple instances with the given `cvss` string and calculates a privacy score from all the answers.\n
+    If the evaluation fails, `None` will be returned.
+    """
+    responses = send_prompt_to_multiple_instances(config, cvss)
 
     values = []
     for response in responses:
@@ -154,7 +161,7 @@ def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout
             values.append(value)
 
     # we need at least 2 values for calculating the standard deviation and at least 70% of valid answers to calculate the risk
-    if len(values) < 2 or len(values) < instance_count * 0.7:
+    if len(values) < 2 or len(values) < config.skynet_instance_count * 0.7:
         print("Got no valid responses.")
         return None
 
@@ -171,13 +178,9 @@ def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout
     return privacy_score
 
 def compute_privacy_score(config: Config, cvss: str) -> float | None:
-    "Evaluate the `cvss` impact to privacy as a score from `0.0 to 10.0`."
-
-    # configs
-    model = "phi3.5:latest"
-    instance_count = 7
-    timeout = 60
-    max_runs = 5
+    """Compute the privacy impact score for the given `cvss` string.\n
+    The score ranges from `0.0` to `10.0`, where higher values indicate greater privacy risk.
+    """
 
     cvss_readable = cvss_to_readable_text(cvss)
     if cvss_readable == None:
@@ -185,12 +188,12 @@ def compute_privacy_score(config: Config, cvss: str) -> float | None:
         return None
 
     count = 0
-    privacy_score = do_query(config, cvss_readable, instance_count, model, timeout)
-    while privacy_score == None and count < max_runs:
-        privacy_score = do_query(config, cvss_readable, instance_count, model, timeout)
+    privacy_score = do_query(config, cvss_readable)
+    while privacy_score == None and count < config.skynet_max_runs:
+        privacy_score = do_query(config, cvss_readable)
         count += 1
 
-    if count >= max_runs:
+    if count >= config.skynet_max_runs:
         return None
 
     return privacy_score
