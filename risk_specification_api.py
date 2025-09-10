@@ -8,6 +8,9 @@ class RiskSpecificationApi:
         self._endpoint = endpoint
 
     def send_risk_specification(self, risk_specification: RiskSpecification) -> bool:
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(self._endpoint, headers=headers, json=risk_specification.model_dump_json())
-        return response.ok
+        try:
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(self._endpoint, headers=headers, json=risk_specification.model_dump_json())
+            return response.ok
+        except:
+            return False

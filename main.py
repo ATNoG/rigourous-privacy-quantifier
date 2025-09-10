@@ -53,6 +53,9 @@ def _process_kafka_messages(config: Config, consumer: KafkaConsumer):
             if successful_send:
                 logging.info("Successfully sent risk specification")
                 print(f"Successfully sent risk specification", flush=True)
+            else:
+                logging.info("Failed to send risk specification")
+                print("Failed to send risk specification", flush=True)
 
     except KeyboardInterrupt:
         logging.error("Process interrupted by user")
@@ -72,8 +75,7 @@ def _send_risk_specification(config: Config, message: str) -> bool:
     if not risk_specification:
         return False
 
-    # return RiskSpecificationApi(config.risk_specification_api_endpoint).send_risk_specification(risk_specification)
-    return True
+    return RiskSpecificationApi(config.risk_specification_api_endpoint).send_risk_specification(risk_specification)
 
 def main(config: Config):
     consumer = _init_kafka(config)
