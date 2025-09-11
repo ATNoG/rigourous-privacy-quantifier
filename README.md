@@ -14,7 +14,7 @@ pip3 install -r requirements.txt
 
 ### ONE Testbed access
 
-Connect with **OpenVPN** and use **kubeconfig** file to manage resources in **itav** namespace, e.g., to find **RISK_SPECIFICATION_API** endpoint (kubectl --kubeconfig kubeconfig get services).
+Connect with **OpenVPN** and use **kubeconfig** file to manage resources in **itav** namespace, e.g., to find **RISK_SPECIFICATION_API** endpoint (kubectl --kubeconfig config/kubeconfig get services).
 
 ### Running the script
 

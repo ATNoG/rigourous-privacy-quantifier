@@ -24,12 +24,12 @@ def main():
         bootstrap_servers=config.kafka_address,
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
         key_serializer=lambda v: json.dumps(v).encode('utf-8'),
-        ssl_cafile=config.ca_cert,
+        ssl_cafile=config.kafka_ca_cert,
         ssl_check_hostname=False,
-        security_protocol=config.security_protocol,
-        sasl_mechanism=config.sasl_mechanism,
-        sasl_plain_username=config.sasl_plain_username,
-        sasl_plain_password=config.sasl_plain_password
+        security_protocol=config.kafka_security_protocol,
+        sasl_mechanism=config.kafka_sasl_mechanism,
+        sasl_plain_username=config.kafka_sasl_plain_username,
+        sasl_plain_password=config.kafka_sasl_plain_password
     )
 
     data = {

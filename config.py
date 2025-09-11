@@ -4,14 +4,14 @@ import json
 
 class Config(BaseModel):
     # kafka
-    ca_cert: Path
+    kafka_ca_cert: Path
     kafka_address: str
-    security_protocol: str
+    kafka_security_protocol: str
     kafka_topic: str
-    sasl_mechanism: str
-    sasl_plain_username: str
-    sasl_plain_password: str
-    auto_offset_reset: str
+    kafka_sasl_mechanism: str
+    kafka_sasl_plain_username: str
+    kafka_sasl_plain_password: str
+    kafka_auto_offset_reset: str
 
     # skynet
     skynet_token: str
@@ -20,8 +20,9 @@ class Config(BaseModel):
     skynet_timeout: int
     skynet_max_runs: int
 
-    # random
+    # risk_specification_api
     risk_specification_api_endpoint: str
+    risk_specification_api_timeout: int
 
     @classmethod
     def from_config_path(cls, str_path: str) -> "Config | None":
@@ -30,16 +31,16 @@ class Config(BaseModel):
             final = {}
 
             # get the certificate file
-            final["ca_cert"] = path / "ca-cert.pem"
-            if not final["ca_cert"].exists():
+            final["kafka_ca_cert"] = path / "ca-cert.pem"
+            if not final["kafka_ca_cert"].exists():
                 return None
 
             # get random configs
             with (path / "config.json").open() as f:
                 json_data = json.load(f)
-                final.update(json_data["kafka"])
-                final.update({"risk_specification_api_endpoint": json_data["risk_specification_api_endpoint"]})
-                final.update(json_data["skynet"])
+                for category in json_data:
+                    for value_key in json_data[category]:
+                        final.update({f"{category}_{value_key}": json_data[category][value_key]})
 
             return cls(**final)
         except:

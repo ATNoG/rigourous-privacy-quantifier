@@ -9,11 +9,11 @@ from config import Config
 def get_topics(config: Config):
     client = KafkaAdminClient (
         bootstrap_servers   = config.kafka_address,
-        security_protocol   = config.security_protocol,
-        ssl_cafile          = config.ca_cert,
-        sasl_mechanism      = config.sasl_mechanism,
-        sasl_plain_username = config.sasl_plain_username,
-        sasl_plain_password = config.sasl_plain_password,
+        security_protocol   = config.kafka_security_protocol,
+        ssl_cafile          = config.kafka_ca_cert,
+        sasl_mechanism      = config.kafka_sasl_mechanism,
+        sasl_plain_username = config.kafka_sasl_plain_username,
+        sasl_plain_password = config.kafka_sasl_plain_password,
     )
 
     print(client.list_topics())
@@ -26,12 +26,12 @@ def _init_kafka(config: Config) -> KafkaConsumer:
     consumer = KafkaConsumer (
         config.kafka_topic,
         bootstrap_servers   = config.kafka_address,
-        security_protocol   = config.security_protocol,
-        ssl_cafile          = config.ca_cert,
-        sasl_mechanism      = config.sasl_mechanism,
-        sasl_plain_username = config.sasl_plain_username,
-        sasl_plain_password = config.sasl_plain_password,
-        auto_offset_reset   = config.auto_offset_reset,
+        security_protocol   = config.kafka_security_protocol,
+        ssl_cafile          = config.kafka_ca_cert,
+        sasl_mechanism      = config.kafka_sasl_mechanism,
+        sasl_plain_username = config.kafka_sasl_plain_username,
+        sasl_plain_password = config.kafka_sasl_plain_password,
+        auto_offset_reset   = config.kafka_auto_offset_reset,
         group_id            = group_id,
         enable_auto_commit  = enable_auto_commit
     )
@@ -75,7 +75,7 @@ def _send_risk_specification(config: Config, message: str) -> bool:
     if not risk_specification:
         return False
 
-    return RiskSpecificationApi(config.risk_specification_api_endpoint).send_risk_specification(risk_specification)
+    return RiskSpecificationApi(config.risk_specification_api_endpoint, config.risk_specification_api_timeout).send_risk_specification(risk_specification)
 
 def main(config: Config):
     consumer = _init_kafka(config)

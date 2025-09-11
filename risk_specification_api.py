@@ -3,9 +3,11 @@ import requests
 
 class RiskSpecificationApi:
     _endpoint: str
+    _timeout: int
 
-    def __init__(self, endpoint: str):
+    def __init__(self, endpoint: str, timeout: int):
         self._endpoint = endpoint
+        self._timeout = timeout
 
     def send_risk_specification(self, risk_specification: RiskSpecification) -> bool:
         try:

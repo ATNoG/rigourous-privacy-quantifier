@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import requests, re, statistics, json, time
+import requests, re, statistics, json, time, itertools
 from config import Config
 from pathlib import Path
 from typing import Any
@@ -269,12 +269,12 @@ def send_prompt_to_instance(url: str, headers: dict, data: dict, timeout: int) -
     except requests.RequestException as e:
         return {"error": True, "error-str": str(e), "time": time.time() - start}
 
-def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count: int, model: str, timeout: int) -> list[dict[str, Any]]:
+def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[str, Any]]:
     """Get a dictionaty with `instance_count` LLM responses.\n
     Each answer will be acquired from :func:`send_prompt_to_instance`.\n
     """
 
-    assert instance_count > 0
+    assert config.skynet_instance_count > 0
 
     url = "https://skynet.av.it.pt/api/chat/completions"
     prompt  = "Based on the following CVSS report about a component:\n"
@@ -291,7 +291,7 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count:
     }
 
     data = {
-        "model": model,
+        "model": config.skynet_model,
         "messages": [{
             "role": "user",
             "content": prompt
@@ -301,16 +301,16 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str, instance_count:
     }
 
     results = []
-    with ThreadPoolExecutor(max_workers=instance_count) as executor:
-        futures = [executor.submit(send_prompt_to_instance, url, headers, data, timeout) for _ in range(instance_count)]
+    with ThreadPoolExecutor(max_workers=config.skynet_instance_count) as executor:
+        futures = [executor.submit(send_prompt_to_instance, url, headers, data, config.skynet_timeout) for _ in range(config.skynet_instance_count)]
         for future in as_completed(futures):
             results.append(future.result())
 
     return results
 
 # TODO: maybe ignore runs with the std dev too high??
-def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout: int) -> dict[str, Any] | None:
-    responses = send_prompt_to_multiple_instances(config, cvss, instance_count, model, timeout)
+def do_query(config: Config, cvss: str) -> dict[str, Any] | None:
+    responses = send_prompt_to_multiple_instances(config, cvss)
 
     values = []
     for response in responses:
@@ -330,7 +330,7 @@ def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout
             print(f"Error: {response["error-str"][:100] + ' ...'}")
 
     # we need at least 2 values for calculating the standard deviation and at least 70% of valid answers to calculate the risk
-    if len(values) < 2 or len(values) < instance_count * 0.7:
+    if len(values) < 2 or len(values) < config.skynet_instance_count * 0.7:
         print("Got no valid responses")
         return None
 
@@ -390,21 +390,19 @@ def do_query(config: Config, cvss: str, instance_count: int, model: str, timeout
     #     return {}
     # return response.json()
 
-def compute_privacy_score(config: Config, cvss: str, score: float) -> float:
-    "Evaluate the `cvss` impact to privacy as a score from `0.0 to 10.0`."
-
+def save_privacy_score(config: Config, cvss: str, score: float):
     # configs
-    model = "gemma3:12b"
-    instance_count = 7
+    # config.skynet_model = "gemma3:12b"
+    config.skynet_instance_count = 7
+    config.skynet_timeout = 60
     run_count = 10
-    timeout = 60
 
     tests_folder = cvss.replace("/", "-")
     plot_data = {"invalid_runs": 0, "runs": []}
     cvss_readable = cvss_to_readable_text(cvss)
     assert cvss_readable != None
     while len(plot_data["runs"]) < run_count:
-        data = do_query(config, cvss_readable, instance_count, model, timeout)
+        data = do_query(config, cvss_readable)
 
         # make sure that unsuccessful risk evaluations are ignored
         if not data:
@@ -416,10 +414,8 @@ def compute_privacy_score(config: Config, cvss: str, score: float) -> float:
 
     # save the results for ploting
     Path(f"tests/{score}-{tests_folder}").mkdir(parents=True, exist_ok=True)
-    with open(f"tests/{score}-{tests_folder}/{model}.json", "w") as f:
+    with open(f"tests/{score}-{tests_folder}/{config.skynet_model}.json", "w") as f:
         json.dump(plot_data, f, indent=4)
-
-    exit(0)
 
     # response = ""
     # while True:
@@ -449,13 +445,43 @@ def get_result(res: str) -> float | None:
     else:
         return None
 
+def generate_cvss_vectors():
+    # all (without environmental metrics) possible values for cvss3.1
+    metrics = {
+        # base score metrics
+        'AV': ('N', 'A', 'L', 'P'),
+        'AC': ('L', 'H'),
+        'PR': ('N', 'L', 'H'),
+        'UI': ('N', 'R'),
+        'S':  ('U', 'C'),
+        'C':  ('N', 'L', 'H'),
+        'I':  ('N', 'L', 'H'),
+        'A':  ('N', 'L', 'H'),
+        # # temporal score metrics
+        # 'E':  ('X', 'U', 'P', 'F', 'H'),
+        # 'RL': ('X', 'O', 'T', 'W', 'U'),
+        # 'RC': ('X', 'U', 'R', 'C')
+    }
+
+    # get the metric names and their values
+    metric_keys = list(metrics.keys())
+    value_sets = [metrics[key] for key in metric_keys]
+
+    # create the generator for all combinations
+    all_combinations = itertools.product(*value_sets)
+
+    # yield each combination formatted as a cvss3.1 string
+    for combination in all_combinations:
+        vector_parts = [f"{key}:{val}" for key, val in zip(metric_keys, combination)]
+        yield f"CVSS:3.1/{'/'.join(vector_parts)}"
+
 if __name__ == "__main__":
     config = Config.from_config_path("config/")
     if not config:
         print("Could not build config from config directory.")
         exit(1)
 
-    # TODO: generate all the possible cvss conbinations and test them all
+    # TODO: generate all the possible cvss combinations and test them all
     # cvss = "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
 
     cvss, score = "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N", 2.5  # 2.5  --> https://nvd.nist.gov/vuln/detail/CVE-2024-35281
@@ -467,4 +493,11 @@ if __name__ == "__main__":
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", 9.8  # 9.8  --> https://nvd.nist.gov/vuln/detail/CVE-2019-9874
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", 10.0 # 10.0 --> https://nvd.nist.gov/vuln/detail/cve-2021-44228
 
-    result = compute_privacy_score(config, cvss, score)
+    # save_privacy_score(config, cvss, score)
+
+    count = 0
+    cvss_generator = generate_cvss_vectors()
+    for cvss in cvss_generator:
+        count += 1
+
+    print(count)
