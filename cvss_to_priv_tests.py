@@ -475,6 +475,40 @@ def generate_cvss_vectors():
         vector_parts = [f"{key}:{val}" for key, val in zip(metric_keys, combination)]
         yield f"CVSS:3.1/{'/'.join(vector_parts)}"
 
+# TODO: always opening and closing the file might not be the best idea
+def exhaustive_cvss_tests(config: Config):
+    # clear the test file (and make create it if it does not exist)
+    Path(f"tests/exhaustive").mkdir(parents=True, exist_ok=True)
+    open(f"tests/exhaustive/{config.skynet_model}.json", "w").write("{\n    \"runs\": [\n")
+
+    separator = ""
+    test_file = open(f"tests/exhaustive/{config.skynet_model}.json", "a")
+    for cvss in generate_cvss_vectors():
+        cvss_readable = cvss_to_readable_text(cvss)
+        assert cvss_readable != None
+
+        plot_data = {"cvss": cvss, "invalid_runs": 0, "risk_score": None}
+        data = do_query(config, cvss_readable)
+        while data == None and plot_data["invalid_runs"] < config.skynet_max_runs:
+            data = do_query(config, cvss_readable)
+            plot_data["invalid_runs"] += 1
+
+        if plot_data["invalid_runs"] < config.skynet_max_runs:
+            assert data != None
+            plot_data["risk_score"] = data["risk_level"]
+
+        if separator != "":
+            test_file.write(f"{separator}\n")
+
+        # save the result
+        data = json.dumps(plot_data, indent=12)[1:-2]
+        test_file.write(f"        {{{data}\n        }}")
+
+        separator = ","
+
+    test_file.write("\n    ]\n}")
+    test_file.close()
+
 if __name__ == "__main__":
     config = Config.from_config_path("config/")
     if not config:
@@ -494,10 +528,4 @@ if __name__ == "__main__":
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", 10.0 # 10.0 --> https://nvd.nist.gov/vuln/detail/cve-2021-44228
 
     # save_privacy_score(config, cvss, score)
-
-    count = 0
-    cvss_generator = generate_cvss_vectors()
-    for cvss in cvss_generator:
-        count += 1
-
-    print(count)
+    exhaustive_cvss_tests(config)
