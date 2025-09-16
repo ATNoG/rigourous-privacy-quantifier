@@ -2,45 +2,40 @@ from cvss_to_priv import compute_privacy_score
 from tra_message import Anomaly, TraMessage
 from pydantic import BaseModel
 from config import Config
+import json
 
 class RiskSpecification(BaseModel):
     cpe: str
-    risk_score: float
-    privacy_score: float
     anomalies: list[Anomaly]
 
     @classmethod
-    def from_tra_message(cls, config: Config, tra_message: TraMessage) -> "RiskSpecification | None":
+    def from_tra_message(cls, tra_message: TraMessage) -> "RiskSpecification | None":
         if not tra_message.risk_score or not tra_message.risk_score.anomalies or not tra_message.risk_score.anomalies[0].cpe:
             return None
 
-        scores = RiskSpecification._calculate_scores(config, tra_message.risk_score.anomalies)
+        data = {"cpe": tra_message.risk_score.anomalies[0].cpe, "anomalies": tra_message.risk_score.anomalies}
+        return RiskSpecification(**data)
+
+    def get_risk_data(self, config: Config) -> dict | None:
+        scores = self._calculate_scores(config)
         if scores == None:
             return None
 
-        data = {}
-        data["cpe"]           = tra_message.risk_score.anomalies[0].cpe
-        data["anomalies"]     = tra_message.risk_score.anomalies
-        data["risk_score"]    = scores[0]
-        data["privacy_score"] = scores[1]
-        return RiskSpecification(**data)
+        data = json.loads(self.model_dump_json())
+        data.update({"risk_score": scores[0], "privacy_score": scores[1]})
+        return data
 
-    @classmethod
-    def _calculate_scores(cls, config: Config, anomalies: list[Anomaly]) -> tuple[float, float] | None:
+    # TODO: even if just a single risk score is calculated, this still reports success. what should the threshold be??
+    def _calculate_scores(self, config: Config) -> tuple[float, float] | None:
         risk_score = 0.0
         privacy_score = 0.0
         calculated_score = False
-        for anomaly in anomalies:
-            if anomaly.base_score:
-                risk_score += anomaly.base_score
+        for anomaly in self.anomalies:
+            risk_score += anomaly.base_score
 
-            if anomaly.cvss31_vector_string:
-                score = compute_privacy_score(config, anomaly.cvss31_vector_string)
-                if score == None:
-                    print("Failed to compute the privacy score")
-                    continue
-
-                privacy_score += score
+            priv_score = compute_privacy_score(config, anomaly.cvss31_vector_string)
+            if type(priv_score) == float:
+                privacy_score += priv_score
                 calculated_score = True
 
-        return (risk_score / len(anomalies), privacy_score / len(anomalies)) if calculated_score else None
+        return (risk_score / len(self.anomalies), privacy_score / len(self.anomalies)) if calculated_score else None

@@ -162,7 +162,7 @@ def do_query(config: Config, cvss: str) -> float | None:
 
     # we need at least 2 values for calculating the standard deviation and at least 70% of valid answers to calculate the risk
     if len(values) < 2 or len(values) < config.skynet_instance_count * 0.7:
-        print("Got no valid responses.")
+        # print("Got no valid responses.")
         return None
 
     mean = round(sum(values) / len(values), 1)
@@ -171,21 +171,20 @@ def do_query(config: Config, cvss: str) -> float | None:
         values = [val for val in values if (val >= (mean - std_dev)) and (val <= (mean + std_dev))]
 
     if len(values) < 2:
-        print("Got no valid responses.")
+        # print("Got no valid responses.")
         return None
 
     privacy_score = round(sum(values) / len(values), 1)
     return privacy_score
 
-def compute_privacy_score(config: Config, cvss: str) -> float | None:
+def compute_privacy_score(config: Config, cvss: str) -> float | str:
     """Compute the privacy impact score for the given `cvss` string.\n
     The score ranges from `0.0` to `10.0`, where higher values indicate greater privacy risk.
     """
 
     cvss_readable = cvss_to_readable_text(cvss)
     if cvss_readable == None:
-        print("Failed to parse the cvss with an invalid format")
-        return None
+        return "Failed to parse the cvss (invalid format)"
 
     count = 0
     privacy_score = do_query(config, cvss_readable)
@@ -194,6 +193,7 @@ def compute_privacy_score(config: Config, cvss: str) -> float | None:
         count += 1
 
     if count >= config.skynet_max_runs:
-        return None
+        return "Failed to calculate the privacy risk score"
 
+    assert privacy_score != None
     return privacy_score

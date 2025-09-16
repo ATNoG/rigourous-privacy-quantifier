@@ -36,8 +36,6 @@ class TraMessage(BaseModel):
             if type(data) == str:
                 data = json.loads(data)
 
-            # print(f"Parsed TRA message: {str(data)[:100] + ' ...'}", flush=True)
             return TraMessage(**data)
-        except Exception as e:
-            # print(f"Failed to parse TRA message: {e}", flush=True)
+        except:
             return None
