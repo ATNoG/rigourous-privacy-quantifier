@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import statistics, requests, re
-from config import Config
+from models import Config
 from typing import Any
 
 cvss3_1 = {

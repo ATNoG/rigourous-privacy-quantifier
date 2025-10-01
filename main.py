@@ -1,9 +1,6 @@
-from risk_specification_api import RiskSpecificationApi
+from models import RiskSpecification, TraMessage, Config, RiskSpecificationApi
 from kafka import KafkaConsumer, KafkaAdminClient
-from risk_specification import RiskSpecification
-from tra_message import TraMessage
 import logging, random, string
-from config import Config
 
 # debug fn
 def get_topics(config: Config):

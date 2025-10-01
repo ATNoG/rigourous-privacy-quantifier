@@ -1,7 +1,6 @@
+from models import Anomaly, TraMessage, Config
 from cvss_to_priv import compute_privacy_score
-from tra_message import Anomaly, TraMessage
 from pydantic import BaseModel
-from config import Config
 import json
 
 class RiskSpecification(BaseModel):

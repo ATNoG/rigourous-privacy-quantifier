@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests, re, statistics, json, time, itertools
-from config import Config
+from models import Config
 from pathlib import Path
 from typing import Any
 

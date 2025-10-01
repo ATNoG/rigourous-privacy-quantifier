@@ -1,5 +1,5 @@
 from kafka import KafkaProducer
-from config import Config
+from models import Config
 import json, logging
 
 def send_message_kafka(producer: KafkaProducer, topic: str, key: bytes, value: bytes):
