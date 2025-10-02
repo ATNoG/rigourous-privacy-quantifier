@@ -1,5 +1,6 @@
-from models import Anomaly, TraMessage, Config
+from models.tra_message import Anomaly, TraMessage
 from cvss_to_priv import compute_privacy_score
+from models.config import Config
 from pydantic import BaseModel
 import json
 

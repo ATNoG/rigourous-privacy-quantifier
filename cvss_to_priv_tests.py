@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests, re, statistics, json, time, itertools
-from models import Config
+from models.priv_guide_report import PrivGuideReport
+from models.config import Config
 from pathlib import Path
 from typing import Any
 
@@ -510,7 +511,12 @@ def exhaustive_cvss_tests(config: Config):
     test_file.close()
 
 if __name__ == "__main__":
-    config = Config.from_config_path("config/")
+    priv_guide_report = PrivGuideReport.from_file_path("priv_guide_report_examples/example0.json")
+    if not priv_guide_report:
+        print("Could not parse priv guide report.")
+        exit(1)
+
+    config = Config.from_config_path("config/", priv_guide_report)
     if not config:
         print("Could not build config from config directory.")
         exit(1)

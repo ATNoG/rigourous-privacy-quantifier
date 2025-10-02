@@ -1,5 +1,6 @@
+from models.priv_guide_report import PrivGuideReport
+from models.config import Config
 from kafka import KafkaProducer
-from models import Config
 import json, logging
 
 def send_message_kafka(producer: KafkaProducer, topic: str, key: bytes, value: bytes):
@@ -14,7 +15,12 @@ def send_message_kafka(producer: KafkaProducer, topic: str, key: bytes, value: b
         print(f"Failed to send message: {e}")
 
 def main():
-    config = Config.from_config_path("config/")
+    priv_guide_report = PrivGuideReport.from_file_path("priv_guide_report_examples/example0.json")
+    if not priv_guide_report:
+        print("Could not parse priv guide report.")
+        exit(1)
+
+    config = Config.from_config_path("config/", priv_guide_report)
     if not config:
         print("Could not build config from config directory.")
         exit(1)

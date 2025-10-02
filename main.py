@@ -1,5 +1,9 @@
-from models import RiskSpecification, TraMessage, Config, RiskSpecificationApi
+from models.risk_specification_api import RiskSpecificationApi
+from models.risk_specification import RiskSpecification
+from models.priv_guide_report import PrivGuideReport
 from kafka import KafkaConsumer, KafkaAdminClient
+from models.tra_message import TraMessage
+from models.config import Config
 import logging, random, string
 
 # debug fn
@@ -16,7 +20,7 @@ def get_topics(config: Config):
     print(client.list_topics())
     client.close()
 
-def _init_kafka(config: Config) -> KafkaConsumer:
+def init_kafka(config: Config) -> KafkaConsumer:
     group_id           = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
     enable_auto_commit = True
 
@@ -42,7 +46,7 @@ def _init_kafka(config: Config) -> KafkaConsumer:
 
     return consumer
 
-def _process_kafka_messages(config: Config, consumer: KafkaConsumer):
+def process_kafka_messages(config: Config, consumer: KafkaConsumer):
     inv_msg_counter = 0
     try:
         logging.info(f'Subscribed to topic: {config.kafka_topic}')
@@ -105,11 +109,16 @@ def _process_kafka_message(config: Config, inv_msg_counter: int, message: str) -
     return False
 
 def main(config: Config):
-    consumer = _init_kafka(config)
-    _process_kafka_messages(config, consumer)
+    consumer = init_kafka(config)
+    process_kafka_messages(config, consumer)
 
 if __name__ == "__main__":
-    config = Config.from_config_path("config/")
+    priv_guide_report = PrivGuideReport.from_file_path("priv_guide_report_examples/example0.json")
+    if not priv_guide_report:
+        print("Could not parse priv guide report.")
+        exit(1)
+
+    config = Config.from_config_path("config/", priv_guide_report)
     if not config:
         print("Could not build config from config directory.")
         exit(1)
@@ -121,4 +130,4 @@ if __name__ == "__main__":
     # config.kafka_topic = "testing123"
 
     # get_topics(config)
-    main(config)
+    # main(config)

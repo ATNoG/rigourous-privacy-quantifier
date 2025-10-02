@@ -1,4 +1,4 @@
-from models import Config
+from models.config import Config
 import requests
 
 class RiskSpecificationApi:

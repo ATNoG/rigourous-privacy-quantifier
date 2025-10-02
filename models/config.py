@@ -1,3 +1,4 @@
+from models.priv_guide_report import PrivGuideReport
 from pydantic import BaseModel
 from pathlib import Path
 import json
@@ -24,8 +25,11 @@ class Config(BaseModel):
     risk_specification_api_endpoint: str
     risk_specification_api_timeout: int
 
+    # privacy guide report
+    priv_guide_report: PrivGuideReport
+
     @classmethod
-    def from_config_path(cls, str_path: str) -> "Config | None":
+    def from_config_path(cls, str_path: str, priv_guide_report: PrivGuideReport) -> "Config | None":
         try:
             path = Path(str_path)
             final = {}
@@ -42,6 +46,7 @@ class Config(BaseModel):
                     for value_key in json_data[category]:
                         final.update({f"{category}_{value_key}": json_data[category][value_key]})
 
+            final["priv_guide_report"] = priv_guide_report
             return cls(**final)
         except:
             return None

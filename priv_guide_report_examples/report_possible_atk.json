@@ -1,0 +1,384 @@
+{
+    "attack trees": [
+        {
+            "root": {
+                "description": "Visitor personal data leak",
+                "query": "attack_trees/queries/visitor_leak.rq",
+                "children": [
+                    {
+                        "description": "Visitor's personal data is collected",
+                        "query": "attack_trees/queries/visitor_collected.rq",
+                        "children": [],
+                        "execution status": 2,
+                        "execution result": [
+                            {
+                                "data": "https://devprivops.com/dfd/Presence"
+                            }
+                        ],
+                        "clearence level": 0,
+                        "groups": [
+                            "all"
+                        ]
+                    }
+                ],
+                "execution status": 2,
+                "execution result": [
+                    {
+                        "data": "https://devprivops.com/dfd/Presence"
+                    }
+                ],
+                "clearence level": 0,
+                "groups": [
+                    "all"
+                ]
+            }
+        }
+    ],
+    "branch": "master",
+    "config": "possible_atk",
+    "extra data": [
+        {
+            "clearence level": 0,
+            "data row line": "",
+            "description": "For each personal data point collected, lists every data processing, storage and share with third party to which a user has to consent to",
+            "groups": [
+                "all"
+            ],
+            "heading": "List of information to be provided for each personal data point collected",
+            "location": "regulations.dpia",
+            "results": [
+                {
+                    "dt": "https://devprivops.com/dfd/Document",
+                    "from": "https://devprivops.com/dfd/Home_Owner",
+                    "location": "Portugal",
+                    "storage_period": "eternal",
+                    "to": "https://devprivops.com/dfd/NAS"
+                }
+            ]
+        }
+    ],
+    "policies": [
+        {
+            "name": "actions",
+            "results": [
+                {
+                    "clearence level": 1,
+                    "description": "Ensure all system components have to pass SonarQube checks in their CI/CD pipelines",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "",
+                    "maximum violations": 0,
+                    "name": "Components must be verified by SonarQube",
+                    "violations": []
+                }
+            ]
+        },
+        {
+            "name": "asvs",
+            "results": [
+                {
+                    "clearence level": 1,
+                    "description": "Ensure all processes' caches are defined",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "",
+                    "maximum violations": 0,
+                    "name": "No undefined caches",
+                    "violations": []
+                },
+                {
+                    "clearence level": 1,
+                    "description": "Ensure all data obtained when logged in is deleted at the end of the session",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "",
+                    "maximum violations": 0,
+                    "name": "Browser data is deleted when the session ends",
+                    "violations": []
+                },
+                {
+                    "clearence level": 1,
+                    "description": "Ensure the browser does not hold sensitive information, so that client-side attacks cannot exfiltrate it",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "",
+                    "maximum violations": 0,
+                    "name": "No sensitive information in the browser",
+                    "violations": []
+                }
+            ]
+        },
+        {
+            "name": "gdpr",
+            "results": [
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all data types that flow in the system are declared",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "For each dataType, ensure a declaration for it exists in the 'data types' property",
+                    "maximum violations": 0,
+                    "name": "No undefined data types",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "All external entities that partake in data transactions must be defined",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all entities are declared in the 'external entities' property or the 'categories' property of one",
+                    "maximum violations": 0,
+                    "name": "All external entities must be described",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "The flows of data reaching data stores must all exist",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure for all dataFlows there exists a declaration in the 'data flows' property",
+                    "maximum violations": 0,
+                    "name": "All data flows must be identified",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "All durations and periods must be properly formatted",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "All time units must be 'eternal' or abide by the REGEX  \"^[0-9]+(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|month|months|y|year|years)$\"",
+                    "maximum violations": 0,
+                    "name": "Wrong time formatting",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Data flow sources and destinations must be external entities, processes or stores",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "For each 'dataFlow', both the 'to' and 'from' properties shall be references to valid external entities, processes or data stores.",
+                    "maximum violations": 0,
+                    "name": "Wrong data flow endpoints",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all the personal data has a valid destinatary",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all destinataries for the 'data' are valid external entities or their categories",
+                    "maximum violations": 0,
+                    "name": "Personal data requires valid destinataries",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all external entities have a definition in a DFD",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all entities under 'destinataries' is an external entity of a category of external entities in the dfd",
+                    "maximum violations": 0,
+                    "name": "All external entities must be defined",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all personal data has a definition in a DFD",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all data types with category 'dpia:personal' are defined in the 'personal data' property",
+                    "maximum violations": 0,
+                    "name": "All personal data must be defined",
+                    "violations": [
+                        {
+                            "data": "https://devprivops.com/dfd/Presence"
+                        }
+                    ]
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all processing purposes have definitions",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all processes' purposes and those under 'personal data processing whitelist' and 'personal data processing that requires DPIA' are defined under the 'purposes' property of a processing",
+                    "maximum violations": 0,
+                    "name": "All purposes of processing must be defined",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure the processings are mentioned in the DPIA, to the required extent.",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all processes in the dfd are defined in the 'processings' property",
+                    "maximum violations": 0,
+                    "name": "All processings have to undergo a DPIA",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure the last update date is a valid date",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure the 'last update' date abides by the REGEX \"^[0-9]{2}/[0-9]{2}/[0-9]{4}\"",
+                    "maximum violations": 0,
+                    "name": "Last update date must be a valid date",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure the retention period represents a valid time duration",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "All time units must be 'eternal' or abide by the REGEX  \"^[0-9]+(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|month|months|y|year|years)$\"",
+                    "maximum violations": 0,
+                    "name": "Retention period has to be a valid duration",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all risks have a definition",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": true,
+                    "mapping message": "Ensure all risks have definitions in the 'risks' property",
+                    "maximum violations": 0,
+                    "name": "All risks must be defined",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure that no data collected in the EU is sent overseas",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "Ensure the 'localtion' values are EU countries",
+                    "maximum violations": 0,
+                    "name": "User data shall not leave the EU",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "The data flows to a process shall not provide more data than it needs",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "Remove the listed 'data' from the data flow's 'data' field",
+                    "maximum violations": 0,
+                    "name": "Only the strictly required data shall enter a process",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure no data type is processed in an unlawful way, according to articles 5 and 6 of the GDPR",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "All processings must be lawful, fair and transparent and also specific, explicit and legitimate",
+                    "maximum violations": 0,
+                    "name": "Data processing must be lawful",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure no data type is processed for more purposes than declared in the DPIA",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "Ensure all purposes in the dfd processes are also declared in the dpia's purpose declaration",
+                    "maximum violations": 0,
+                    "name": "Data can only be used for the declared purposes",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure the project passes the DPIA",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "No process can to automated decisions, score users or have a legal impact on them, do large scale processing, do systematic monitoring, be blacklisted in the DPIA, or not be whitelisted",
+                    "maximum violations": 0,
+                    "name": "DPIA",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all new technologies pass DPIA",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "No processing shall require new technologies",
+                    "maximum violations": 0,
+                    "name": "New Technologies Require DPIA",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all processes with high risk pass DPIA. The risk is defined as likelihood * impact",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "No process can have a risk factor higher than 8",
+                    "maximum violations": 0,
+                    "name": "Processings With High Risk",
+                    "violations": []
+                },
+                {
+                    "clearence level": 0,
+                    "description": "Ensure all applicable processesings have been aproved by a DPO",
+                    "groups": [
+                        "all"
+                    ],
+                    "is consistency": false,
+                    "mapping message": "Ensure there is at least one DPO contact in the DPIA",
+                    "maximum violations": 0,
+                    "name": "DPO Veredict",
+                    "violations": []
+                }
+            ]
+        }
+    ],
+    "project": "devprivops",
+    "time": 1730057275,
+    "user stories": []
+}
