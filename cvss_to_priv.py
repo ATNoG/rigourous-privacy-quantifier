@@ -83,6 +83,7 @@ def send_prompt_to_instance(url: str, headers: dict, data: dict, timeout: int) -
     except requests.RequestException as e:
         return {"error": True, "error-str": str(e)}
 
+# TODO: maybe convert the priv guide report from json to yaml for better natural language processing??
 def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[str, Any]]:
     """Get `config.skynet_instance_count` LLM responses.\n
     Each answer will be acquired from :func:`send_prompt_to_instance`.
@@ -94,6 +95,8 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[st
     url = "https://skynet.av.it.pt/api/chat/completions"
     prompt  = "Based on the following CVSS report about a component:\n"
     prompt += cvss
+    prompt += "\nAnd based on the following privacy guide report for the entire system:\n"
+    prompt += config.priv_guide_report.model_dump_json()
     prompt += "\nPlease evaluate the component based on the risk to privacy, from 1.0-10.0 (both inclusive), with one decimal place, following these immutable rules:\n"
     prompt += "- Lower score is less risk.\n"
     prompt += "- Give me ONLY the score without any other text."
@@ -162,7 +165,6 @@ def do_query(config: Config, cvss: str) -> float | None:
 
     # we need at least 2 values for calculating the standard deviation and at least 70% of valid answers to calculate the risk
     if len(values) < 2 or len(values) < config.skynet_instance_count * 0.7:
-        # print("Got no valid responses.")
         return None
 
     mean = round(sum(values) / len(values), 1)
@@ -171,7 +173,6 @@ def do_query(config: Config, cvss: str) -> float | None:
         values = [val for val in values if (val >= (mean - std_dev)) and (val <= (mean + std_dev))]
 
     if len(values) < 2:
-        # print("Got no valid responses.")
         return None
 
     privacy_score = round(sum(values) / len(values), 1)

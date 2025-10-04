@@ -44,15 +44,16 @@ class RuleResult(BaseModel):
     name: str
     description: str
     mapping_message: str = Field(alias="mapping message")
-    is_consistency: str = Field(alias="is consistency")
+    is_consistency: bool = Field(alias="is consistency")
     violations: list[dict[str, Any]] = []
+    maximum_violations: int = Field(alias="maximum violations")
     clearence_level: int = Field(alias="clearence level")
     groups: list[str] = []
 
 class Regulation(BaseModel):
     name: str
     consistency_results: list[RuleResult] = Field(alias="consistency results", default=[])
-    policy_results: list[RuleResult] = Field(alias="policy results", default=[])
+    results: list[RuleResult] = []
 
 class PrivGuideReport(BaseModel):
     branch: str
@@ -78,6 +79,5 @@ class PrivGuideReport(BaseModel):
             with Path(str_path).open() as f:
                 data = json.load(f)
                 return PrivGuideReport(**data)
-        except Exception as e:
-            print(e)
+        except:
             return None

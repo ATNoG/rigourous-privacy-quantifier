@@ -55,9 +55,9 @@ def process_kafka_messages(config: Config, consumer: KafkaConsumer):
         # process every kafka message
         for message in consumer:
             # logging.info(f"Received message: {message.value.decode('utf-8')}")
-            # print(f"Received message: {message.value.decode('utf-8')[:100] + ' ...'}", flush=True)
+            # print(f"Received message: {message.value.decode('utf-8')[:80] + ' ...'}", flush=True)
 
-            invalid_message = _process_kafka_message(config, inv_msg_counter, message.value.decode('utf-8'))
+            invalid_message = process_kafka_message(config, inv_msg_counter, message.value.decode('utf-8'))
             inv_msg_counter = inv_msg_counter + 1 if invalid_message else 0
 
             # if _send_risk_specification(config, message.value.decode('utf-8')):
@@ -78,7 +78,8 @@ def process_kafka_messages(config: Config, consumer: KafkaConsumer):
     finally:
         consumer.close()
 
-def _process_kafka_message(config: Config, inv_msg_counter: int, message: str) -> bool:
+# TODO: a good idea would be to get some info about the problem and why it didn't work??
+def process_kafka_message(config: Config, inv_msg_counter: int, message: str) -> bool:
     # build a TRA message object from the received kafka message, if possible
     tra_message = TraMessage.from_str(message)
     if not tra_message:
@@ -93,7 +94,7 @@ def _process_kafka_message(config: Config, inv_msg_counter: int, message: str) -
 
     # TODO: need to make sure that this `risk_data` is perfectly valid for the risk specification api
     # calculate the privacy score
-    print(f"{'\n' if inv_msg_counter > 0 else ''}Received a valid message: {message[:100] + ' ...'}")
+    print(f"{'\n' if inv_msg_counter > 0 else ''}Received a valid message: {message[:80] + ' ...'}")
     risk_data = risk_specification.get_risk_data(config)
     if not risk_data:
         print("    Failed to calculate the privacy risk score")
@@ -124,10 +125,10 @@ if __name__ == "__main__":
         exit(1)
 
     # config.kafka_topic = "test_kafka"
-    config.kafka_topic = "R12-AID-TRA"
+    # config.kafka_topic = "R12-AID-TRA"
     # config.kafka_topic = "R13-AID"
     # config.kafka_topic = "MTD-AID"
-    # config.kafka_topic = "testing123"
+    config.kafka_topic = "testing123"
 
     # get_topics(config)
-    # main(config)
+    main(config)
