@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import statistics, requests, re, yaml
 from models.config import Config
-import statistics, requests, re
 from typing import Any
 
 cvss3_1 = {
@@ -83,7 +83,6 @@ def send_prompt_to_instance(url: str, headers: dict, data: dict, timeout: int) -
     except requests.RequestException as e:
         return {"error": True, "error-str": str(e)}
 
-# TODO: maybe convert the priv guide report from json to yaml for better natural language processing??
 def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[str, Any]]:
     """Get `config.skynet_instance_count` LLM responses.\n
     Each answer will be acquired from :func:`send_prompt_to_instance`.
@@ -96,7 +95,9 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[st
     prompt  = "Based on the following CVSS report about a component:\n"
     prompt += cvss
     prompt += "\nAnd based on the following privacy guide report for the entire system:\n"
-    prompt += config.priv_guide_report.model_dump_json()
+    # TODO: is the yaml version actually better than just dumping json??
+    # prompt += config.priv_guide_report.model_dump_json()
+    prompt += yaml.dump(config.priv_guide_report.model_dump())
     prompt += "\nPlease evaluate the component based on the risk to privacy, from 1.0-10.0 (both inclusive), with one decimal place, following these immutable rules:\n"
     prompt += "- Lower score is less risk.\n"
     prompt += "- Give me ONLY the score without any other text."

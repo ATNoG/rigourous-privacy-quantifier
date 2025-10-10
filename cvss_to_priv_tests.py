@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import requests, re, statistics, json, time, itertools
+import requests, re, statistics, json, time, itertools, yaml
 from models.priv_guide_report import PrivGuideReport
 from models.config import Config
 from pathlib import Path
@@ -280,11 +280,12 @@ def send_prompt_to_multiple_instances(config: Config, cvss: str) -> list[dict[st
     url = "https://skynet.av.it.pt/api/chat/completions"
     prompt  = "Based on the following CVSS report about a component:\n"
     prompt += cvss
+    prompt += "\nAnd based on the following privacy guide report for the entire system:\n"
+    # prompt += config.priv_guide_report.model_dump_json()
+    prompt += yaml.dump(config.priv_guide_report.model_dump())
     prompt += "\nPlease evaluate the component based on the risk to privacy, from 1.0-10.0 (both inclusive), with one decimal place, following these immutable rules:\n"
     prompt += "- Lower score is less risk.\n"
     prompt += "- Give me ONLY the score without any other text."
-    # prompt += "- Think of the score range as being uniform so, DO NOT favour certain values in detriment of others."
-    # prompt += "- BE AS PREDICTABLE AND METHODIC AS POSSIBLE."
 
     headers = {
         'Authorization': f'Bearer {config.skynet_token}',
@@ -522,9 +523,9 @@ if __name__ == "__main__":
         exit(1)
 
     # TODO: generate all the possible cvss combinations and test them all
-    # cvss = "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+    cvss, score = "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H", 0.0 # idk the score
 
-    cvss, score = "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N", 2.5  # 2.5  --> https://nvd.nist.gov/vuln/detail/CVE-2024-35281
+    # cvss, score = "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N", 2.5  # 2.5  --> https://nvd.nist.gov/vuln/detail/CVE-2024-35281
     # cvss, score = "CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:N/I:L/A:L", 3.1  # 3.1  --> https://nvd.nist.gov/vuln/detail/CVE-2024-3181
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N", 4.3  # 4.3  --> https://nvd.nist.gov/vuln/detail/cve-2022-21592
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N", 5.3  # 5.3  --> https://nvd.nist.gov/vuln/detail/CVE-2020-14635
@@ -533,5 +534,5 @@ if __name__ == "__main__":
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", 9.8  # 9.8  --> https://nvd.nist.gov/vuln/detail/CVE-2019-9874
     # cvss, score = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", 10.0 # 10.0 --> https://nvd.nist.gov/vuln/detail/cve-2021-44228
 
-    # save_privacy_score(config, cvss, score)
-    exhaustive_cvss_tests(config)
+    save_privacy_score(config, cvss, score)
+    # exhaustive_cvss_tests(config)
