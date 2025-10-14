@@ -25,7 +25,8 @@ class RiskSpecification(BaseModel):
         data.update({"risk_score": scores[0], "privacy_score": scores[1]})
         return data
 
-    # TODO: even if just a single risk score is calculated, this still reports success. what should the threshold be??
+    # TODO: even if just a single risk score is calculated, this still reports success. what should the threshold be
+    #       for the result to be considered a success??
     def _calculate_scores(self, config: Config) -> tuple[float, float] | None:
         risk_score = 0.0
         privacy_score = 0.0

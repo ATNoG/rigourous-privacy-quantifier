@@ -1,6 +1,7 @@
 from models.config import Config
 import requests
 
+# TODO: would it be useful to have a "risk specification" pydantic model to check the validity of the data before sending?
 class RiskSpecificationApi:
     _endpoint: str
     _timeout: int

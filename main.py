@@ -79,6 +79,7 @@ def process_kafka_messages(config: Config, consumer: KafkaConsumer):
         consumer.close()
 
 # TODO: a good idea would be to get some info about the problem and why it didn't work??
+#       this would allow for better error handling
 def process_kafka_message(config: Config, inv_msg_counter: int, message: str) -> bool:
     # build a TRA message object from the received kafka message, if possible
     tra_message = TraMessage.from_str(message)
@@ -92,7 +93,6 @@ def process_kafka_message(config: Config, inv_msg_counter: int, message: str) ->
         print(f"\rReceived {inv_msg_counter} invalid message(s)", end="", flush=True)
         return True
 
-    # TODO: need to make sure that this `risk_data` is perfectly valid for the risk specification api
     # calculate the privacy score
     print(f"{'\n' if inv_msg_counter > 0 else ''}Received a valid message: {message[:80] + ' ...'}")
     risk_data = risk_specification.get_risk_data(config)
