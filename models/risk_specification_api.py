@@ -12,6 +12,7 @@ class RiskSpecificationApi:
 
     def send_risk_data(self, risk_data: dict) -> bool:
         try:
+            # risk_data["cpe"] = "emqx"
             headers = {'Content-Type': 'application/json'}
             response = requests.post(self._endpoint, headers=headers, json=risk_data)
             return response.ok
